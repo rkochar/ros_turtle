@@ -1,5 +1,0 @@
-<launch> 
-	<group ns="turtleass">
-		<node pkg="turtlesim" name="turt" type="turtlesim_node"/>
-	</group>
-</launch>
