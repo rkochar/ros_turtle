@@ -1,44 +1,64 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
-from ros_turtle.msg import Move 
+from ros_turtle.msg import Move
 from geometry_msgs.msg import Twist
 import math
+from std_srvs.srv import Empty
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 
-def move_forward():
+def move_forward(range):
     twist_message = Twist()
-    twist_message.linear.x = 1
+    twist_message.linear.x = range
     pub.publish(twist_message)
 
-def turn_left():
+def turn_left(rad):
     twist_message = Twist()
-    twist_message.angular.z = -math.pi/2
+    twist_message.angular.z = rad
     pub.publish(twist_message)
 
-def turn_and_move(): 
-    move_forward()
+def turn_and_move(range):
+    move_forward(range)
+
     rospy.sleep(1)
-    turn_left()
+    rad = -math.pi/2
+    turn_left(rad)
     rospy.sleep(1)
 
-def make_square():
-    turn_and_move()
-    turn_and_move()
-    turn_and_move()
-    turn_and_move()
+def make_square(range):
+    turn_and_move(range)
+    turn_and_move(range)
+    turn_and_move(range)
+    turn_and_move(range)
+
+def make_circle(radius):
+    twist_message = Twist()
+
+    twist_message.linear.x = radius
+    twist_message.linear.y = 0.0
+    twist_message.linear.z = 0.0
+
+    twist_message.angular.x = 0.0
+    twist_message.angular.y = 0.0
+    twist_message.angular.z = -6.25
+
+    #for i in range(10):
+    pub.publish(twist_message)
+
 
 def callback(data):
     # pub = rospy.Publisher('/turtleass/turtle1/cmd_vel', Twist, queue_size=10)
     rate = rospy.Rate(10)
     if data.type == "circle":
-        rospy.loginfo("cirlce")
+        rospy.loginfo("circle")
+        make_circle(data.range)
     elif data.type == "square":
         rospy.loginfo("square")
-        make_square()
+        make_square(data.range)
     elif data.type == "reset":
         rospy.loginfo("reset")
+        rospy.ServiceProxy('clear', std_srvs.srv.Empty)
     else:
         rospy.loginfo("no such type")
 
@@ -46,8 +66,12 @@ def callback(data):
 def listener():
     rospy.init_node('turtle_controller', anonymous=True)
 
-    rospy.Subscriber('move_turtle', Move, callback)
-#    pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+    try:
+        rospy.Subscriber('move_turtle', Move, callback)
+    except rospy.ServiceException as exp:
+        print("ServiceException in turtle_controller.py", + str(exp))
+
+        #    pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 
     rospy.spin()
 
