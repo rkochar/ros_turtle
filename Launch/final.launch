@@ -1,0 +1,6 @@
+<launch>
+	<group ns="turtleass">
+		<node pkg="turtlesim" name="sim_turt" type="turtlesim_node"/>
+		<node pkg="ros_turtle" name="ros_turt" type="turtle_controller.py"/>
+	</group>
+</launch>
