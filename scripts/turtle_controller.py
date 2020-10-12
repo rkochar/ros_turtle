@@ -20,27 +20,24 @@ def turn_left(rad):
 
 def turn_and_move(range):
     move_forward(range)
+    rospy.sleep(1.5)
 
-    rospy.sleep(1)
-    rad = -math.pi/2
+    rad = -math.pi/2.0000000001
     turn_left(rad)
-    rospy.sleep(1)
+    rospy.sleep(1.5)
 
 def make_square(range):
-    turn_and_move(range)
-    turn_and_move(range)
-    turn_and_move(range)
     turn_and_move(range)
 
 def make_circle(radius):
     twist_message = Twist()
 
     twist_message.linear.x = radius
-    twist_message.linear.y = 0.0
-    twist_message.linear.z = 0.0
+    twist_message.linear.y = 3
+    twist_message.linear.z = 7
 
-    twist_message.angular.x = 0.0
-    twist_message.angular.y = 0.0
+    twist_message.angular.x = 3
+    twist_message.angular.y = 1
     twist_message.angular.z = -6.25
 
     #for i in range(10):
@@ -55,7 +52,8 @@ def callback(data):
         make_circle(data.range)
     elif data.type == "square":
         rospy.loginfo("square")
-        make_square(data.range)
+        for i in range(4):
+            make_square(data.range)
     elif data.type == "reset":
         rospy.loginfo("reset")
         rospy.ServiceProxy('clear', std_srvs.srv.Empty)
