@@ -18,31 +18,61 @@ def turn_left(rad):
     twist_message.angular.z = rad
     pub.publish(twist_message)
 
-def turn_and_move(range):
-    move_forward(range)
-    rospy.sleep(1.5)
-
-    rad = -math.pi/2.0000000001
-    turn_left(rad)
-    rospy.sleep(1.5)
-
 def make_square(range):
-    turn_and_move(range)
+    move_forward(range)
+    rospy.sleep(1)
+    
+    rad = math.pi/2
+    turn_left(rad)
+    rospy.sleep(1)
+    #twist_message.linear.x = 0
+
+def square(range):
+    # Move forward for 'range' steps.
+    twist_message = Twist()
+    twist_message.linear.x = range
+    pub.publish(twist_message)
+    rospy.sleep(1)
+    twist_message.linear.x = 0
+
+    # Turn turtle
+    rad = math.pi / 2
+    twist_message.angular.z = rad
+    pub.publish(twist_message)
+    rospy.sleep(1)
+    twist_message.linear.x = 0
+    pub.publish(twist_message)
 
 def make_circle(radius):
     twist_message = Twist()
+    speed = radius * 2 * math.pi
 
-    twist_message.linear.x = radius
-    twist_message.linear.y = 3
-    twist_message.linear.z = 7
+    twist_message.linear.x = speed # 2 * radius * math.pi
+    #twist_message.linear.y = 3
+    #twist_message.linear.z = 7
 
-    twist_message.angular.x = 3
-    twist_message.angular.y = 1
-    twist_message.angular.z = -6.25
-
+    #twist_message.angular.x = 3
+    #twist_message.angular.y = 1
+    twist_message.angular.z = speed / radius
     #for i in range(10):
     pub.publish(twist_message)
+    # rospy.sleep(time)
 
+def circle(radius):
+    speed = 2
+    time = radius * 2 * math.pi / speed 
+    cond = True
+    
+    while time > 0:
+        if time >= 0.5:
+            make_circle(radius, speed)
+            time -= 0.5
+            rospy.sleep(0.5)
+        else:
+            make_circle(radius, speed)
+            time = 0
+            rospy.sleep(time)
+        
 
 def callback(data):
     # pub = rospy.Publisher('/turtleass/turtle1/cmd_vel', Twist, queue_size=10)
