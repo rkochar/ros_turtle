@@ -86,7 +86,7 @@ def callback(data):
             make_square(data.range)
     elif data.type == "reset":
         rospy.loginfo("reset")
-        rospy.ServiceProxy('clear', std_srvs.srv.Empty)
+        rospy.ServiceProxy('clear', Empty)()
     else:
         rospy.loginfo("Invalid type: ", data.type)
 
