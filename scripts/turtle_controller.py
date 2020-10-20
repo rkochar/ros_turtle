@@ -88,7 +88,7 @@ def callback(data):
         rospy.loginfo("reset")
         rospy.ServiceProxy('clear', std_srvs.srv.Empty)
     else:
-        rospy.loginfo("no such type")
+        rospy.loginfo("Invalid type: ", data.type)
 
 
 def listener():
