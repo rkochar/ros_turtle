@@ -5,6 +5,7 @@ from ros_turtle.msg import Move
 from geometry_msgs.msg import Twist
 import math
 from std_srvs.srv import Empty
+from turtlesim.srv import TeleportAbsolute
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 
@@ -15,13 +16,14 @@ def move_forward(range):
 
 def turn_left(rad):
     twist_message = Twist()
+    twist_message.linear.x = 0
     twist_message.angular.z = rad
     pub.publish(twist_message)
 
 def make_square(range):
     move_forward(range)
     rospy.sleep(1)
-    
+
     rad = math.pi/2
     turn_left(rad)
     rospy.sleep(1)
@@ -60,9 +62,9 @@ def make_circle(radius):
 
 def circle(radius):
     speed = 2
-    time = radius * 2 * math.pi / speed 
+    time = radius * 2 * math.pi / speed
     cond = True
-    
+
     while time > 0:
         if time >= 0.5:
             make_circle(radius, speed)
@@ -72,7 +74,7 @@ def circle(radius):
             make_circle(radius, speed)
             time = 0
             rospy.sleep(time)
-        
+
 
 def callback(data):
     # pub = rospy.Publisher('/turtleass/turtle1/cmd_vel', Twist, queue_size=10)
@@ -86,7 +88,14 @@ def callback(data):
             make_square(data.range)
     elif data.type == "reset":
         rospy.loginfo("reset")
-        rospy.ServiceProxy('clear', Empty)()
+        rospy.ServiceProxy('reset', Empty)()
+    elif data.type == "centre":
+        rospy.loginfo("Centre")
+        rospy.ServiceProxy('turtle1/teleport_absolute',
+                TeleportAbsolute)(5.5, 5.5, math.pi/2)
+    elif data.type == "move":
+        rospy.loginfo("Move")
+        make_square(data.range)
     else:
         rospy.loginfo("Invalid type: ", data.type)
 
