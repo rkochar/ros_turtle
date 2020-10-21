@@ -8,11 +8,13 @@ from std_srvs.srv import Empty
 from turtlesim.srv import TeleportAbsolute
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+speed = 1
 
-def move_forward(range):
+def move_forward(range, speed):
     twist_message = Twist()
-    twist_message.linear.x = range
-    pub.publish(twist_message)
+    twist_message
+    twist_message.linear.x = range * speed
+    return twist_message
 
 def turn_left(rad):
     twist_message = Twist()
@@ -20,9 +22,10 @@ def turn_left(rad):
     twist_message.angular.z = rad
     pub.publish(twist_message)
 
-def make_square(range):
-    move_forward(range)
-    rospy.sleep(1)
+def make_square(range, speed):
+    msg = move_forward(range, speed)
+    pub.publish(msg)
+    rospy.sleep(1/speed)
 
     rad = math.pi/2
     turn_left(rad)
@@ -79,13 +82,15 @@ def circle(radius):
 def callback(data):
     # pub = rospy.Publisher('/turtleass/turtle1/cmd_vel', Twist, queue_size=10)
     rate = rospy.Rate(10)
+
     if data.type == "circle":
         rospy.loginfo("circle")
         make_circle(data.range)
     elif data.type == "square":
-        rospy.loginfo("square")
+        rospy.loginfo("Square side: '{0}' with speed '{1}'".format(
+            str(data.range), float(speed)))
         for i in range(4):
-            make_square(data.range)
+            make_square(data.range, speed)
     elif data.type == "reset":
         rospy.loginfo("reset")
         rospy.ServiceProxy('reset', Empty)()
@@ -96,6 +101,9 @@ def callback(data):
     elif data.type == "move":
         rospy.loginfo("Move")
         make_square(data.range)
+    elif data.type == 'speed':
+        speed = data.range
+        rospy.loginfo("Speed '{0}' ".format(float(speed)))
     else:
         rospy.loginfo("Invalid type: ", data.type)
 
