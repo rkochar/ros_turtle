@@ -15,73 +15,32 @@ def move_forward(range):
     twist_message = Twist()
     twist_message
     twist_message.linear.x = range * speed
-    return twist_message
+    pub.publish(twist_message)
 
 def turn_left(rad):
     twist_message = Twist()
     twist_message.linear.x = 0
-    twist_message.angular.z = rad
+    twist_message.angular.z = rad * speed
     pub.publish(twist_message)
 
 def make_square(range):
-    msg = move_forward(range)
-    pub.publish(msg)
+    move_forward(range)
     rospy.sleep(1/speed)
 
     rad = math.pi/2
     turn_left(rad)
-    rospy.sleep(1)
-    #twist_message.linear.x = 0
-
-def square(range):
-    # Move forward for 'range' steps.
-    twist_message = Twist()
-    twist_message.linear.x = range
-    pub.publish(twist_message)
-    rospy.sleep(1)
-    twist_message.linear.x = 0
-
-    # Turn turtle
-    rad = math.pi / 2
-    twist_message.angular.z = rad
-    pub.publish(twist_message)
-    rospy.sleep(1)
-    twist_message.linear.x = 0
-    pub.publish(twist_message)
+    rospy.sleep(1/speed)
 
 def make_circle(radius):
+    global speed
     twist_message = Twist()
-    speed = radius * 2 * math.pi
+    s = radius * 2 * math.pi #* speed
 
-    twist_message.linear.x = speed # 2 * radius * math.pi
-    #twist_message.linear.y = 3
-    #twist_message.linear.z = 7
-
-    #twist_message.angular.x = 3
-    #twist_message.angular.y = 1
-    twist_message.angular.z = speed / radius
-    #for i in range(10):
+    twist_message.linear.x = s
+    twist_message.angular.z = s / radius
     pub.publish(twist_message)
-    # rospy.sleep(time)
-
-def circle(radius):
-    speed = 2
-    time = radius * 2 * math.pi / speed
-    cond = True
-
-    while time > 0:
-        if time >= 0.5:
-            make_circle(radius, speed)
-            time -= 0.5
-            rospy.sleep(0.5)
-        else:
-            make_circle(radius, speed)
-            time = 0
-            rospy.sleep(time)
-
 
 def callback(data):
-    # pub = rospy.Publisher('/turtleass/turtle1/cmd_vel', Twist, queue_size=10)
     rate = rospy.Rate(10)
 
     if data.type == "circle":
@@ -90,6 +49,8 @@ def callback(data):
     elif data.type == "square":
         rospy.loginfo("Square side: '{0}'".format(
             str(data.range)))
+        global speed
+        rospy.loginfo("Speed '{0}' ".format(float(speed)))
         for i in range(4):
             make_square(data.range)
     elif data.type == "reset":
@@ -117,8 +78,6 @@ def listener():
         rospy.Subscriber('move_turtle', Move, callback)
     except rospy.ServiceException as exp:
         print("ServiceException in turtle_controller.py", + str(exp))
-
-        #    pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 
     rospy.spin()
 
