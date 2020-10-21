@@ -8,9 +8,10 @@ from std_srvs.srv import Empty
 from turtlesim.srv import TeleportAbsolute
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+global speed
 speed = 1
 
-def move_forward(range, speed):
+def move_forward(range):
     twist_message = Twist()
     twist_message
     twist_message.linear.x = range * speed
@@ -22,8 +23,8 @@ def turn_left(rad):
     twist_message.angular.z = rad
     pub.publish(twist_message)
 
-def make_square(range, speed):
-    msg = move_forward(range, speed)
+def make_square(range):
+    msg = move_forward(range)
     pub.publish(msg)
     rospy.sleep(1/speed)
 
@@ -87,10 +88,10 @@ def callback(data):
         rospy.loginfo("circle")
         make_circle(data.range)
     elif data.type == "square":
-        rospy.loginfo("Square side: '{0}' with speed '{1}'".format(
-            str(data.range), float(speed)))
+        rospy.loginfo("Square side: '{0}'".format(
+            str(data.range)))
         for i in range(4):
-            make_square(data.range, speed)
+            make_square(data.range)
     elif data.type == "reset":
         rospy.loginfo("reset")
         rospy.ServiceProxy('reset', Empty)()
@@ -102,6 +103,7 @@ def callback(data):
         rospy.loginfo("Move")
         make_square(data.range)
     elif data.type == 'speed':
+        global speed
         speed = data.range
         rospy.loginfo("Speed '{0}' ".format(float(speed)))
     else:
