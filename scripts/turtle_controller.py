@@ -9,36 +9,60 @@ from turtlesim.srv import TeleportAbsolute
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 global speed
-speed = 1
+speed = 3
 
-def move_forward(range):
+def move_forward(leng, speed):
     twist_message = Twist()
-    twist_message
-    twist_message.linear.x = range * speed
+    twist_message.linear.x = speed
     pub.publish(twist_message)
 
-def turn_left(rad):
+def turn_left(rad, speed):
     twist_message = Twist()
     twist_message.linear.x = 0
-    twist_message.angular.z = rad * speed
+    twist_message.angular.z = speed
     pub.publish(twist_message)
 
-def make_square(range):
-    move_forward(range)
-    rospy.sleep(1/speed)
+def make_square(leng):
+    global speed
+    time_to_wait = leng / speed
+    move_forward(leng, speed)
+    rospy.sleep(time_to_wait)
+    pub.publish(Twist())
 
     rad = math.pi/2
-    turn_left(rad)
-    rospy.sleep(1/speed)
+    time_to_wait_turn = rad / speed
+    turn_left(rad, speed)
+    rospy.sleep(time_to_wait_turn)
+    pub.publish(Twist())
 
 def make_circle(radius):
     global speed
-    twist_message = Twist()
-    s = radius * 2 * math.pi #* speed
+    linear_speed = speed
+    circumference = 2 * math.pi * radius
+    time_taken = circumference / linear_speed
+    angular_speed = (2 * math.pi) / time_taken
 
-    twist_message.linear.x = s
-    twist_message.angular.z = s / radius
-    pub.publish(twist_message)
+    twist_message = Twist()
+    twist_message.linear.x = linear_speed
+    twist_message.angular.z = angular_speed
+    while True:
+        if (time_taken > 0.9):
+            pub.publish(twist_message)
+            rospy.sleep (0.9)
+            time_taken -= 0.9
+        else:
+            pub.publish(twist_message)
+            rospy.sleep(time_taken)
+            pub.publish(Twist())
+            break
+    
+#    global speed
+#    twist_message = Twist()
+#    s = radius * 2 * math.pi #* speed
+
+#    twist_message.linear.x = s
+#    twist_message.angular.z = s / radius
+#    pub.publish(twist_message)
 
 def callback(data):
     rate = rospy.Rate(10)
@@ -65,7 +89,7 @@ def callback(data):
         make_square(data.range)
     elif data.type == 'speed':
         global speed
-        speed = data.range
+        speed *= data.range
         rospy.loginfo("Speed '{0}' ".format(float(speed)))
     else:
         rospy.loginfo("Invalid type: ", data.type)
