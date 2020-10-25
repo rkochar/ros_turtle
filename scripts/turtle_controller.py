@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist
 import math
 from std_srvs.srv import Empty
 from turtlesim.srv import TeleportAbsolute
+from ros_turtle.srv import set_speed
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 global speed
@@ -55,7 +56,7 @@ def make_circle(radius):
             rospy.sleep(time_taken)
             pub.publish(Twist())
             break
-    
+
 #    global speed
 #    twist_message = Twist()
 #    s = radius * 2 * math.pi #* speed
@@ -70,6 +71,7 @@ def callback(data):
     if data.type == "circle":
         rospy.loginfo("circle")
         make_circle(data.range)
+
     elif data.type == "square":
         rospy.loginfo("Square side: '{0}'".format(
             str(data.range)))
@@ -77,29 +79,42 @@ def callback(data):
         rospy.loginfo("Speed '{0}' ".format(float(speed)))
         for i in range(4):
             make_square(data.range)
+
     elif data.type == "reset":
         rospy.loginfo("reset")
         rospy.ServiceProxy('reset', Empty)()
+
     elif data.type == "centre":
         rospy.loginfo("Centre")
         rospy.ServiceProxy('turtle1/teleport_absolute',
-                TeleportAbsolute)(5.5, 5.5, math.pi/2)
+                TeleportAbsolute)(5.5, 5.5, 0)
+
     elif data.type == "move":
         rospy.loginfo("Move")
         make_square(data.range)
+
     elif data.type == 'speed':
         global speed
         speed *= data.range
         rospy.loginfo("Speed '{0}' ".format(float(speed)))
+
     else:
         rospy.loginfo("Invalid type: ", data.type)
 
+def speed_callback(data):
+    rate = rospy.Rate(10)
+    if type(data) == float or type(data) == int:
+        #callback(data_object)
+        rospy.loginfo("Speed service: ", data)
+        global speed
+        speed *= data
 
 def listener():
     rospy.init_node('turtle_controller', anonymous=True)
 
     try:
         rospy.Subscriber('move_turtle', Move, callback)
+        rospy.Service('set_speed', set_speed, speed_callback)
     except rospy.ServiceException as exp:
         print("ServiceException in turtle_controller.py", + str(exp))
 

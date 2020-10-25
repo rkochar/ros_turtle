@@ -55,10 +55,10 @@ find_package(catkin REQUIRED COMPONENTS
  )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Random_Message_4290.srv
-# )
+ add_service_files(
+   FILES
+   set_speed.srv
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -163,6 +163,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
    scripts/turtle_controller.py
+#   srv/speed_service.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
