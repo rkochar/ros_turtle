@@ -115,14 +115,10 @@ def listener():
 
     try:
         rospy.Subscriber('move_turtle', Move, callback)
-    except rospy.ServiceException as exp:
-        print("ServiceException in turtle_controller.py", + str(exp))
-
-    try:
         rospy.Service('set_speed', SetSpeed, speed_callback)
     except rospy.ServiceException as exp:
         print("ServiceException in turtle_controller.py", + str(exp))
-    
+
     rospy.spin()
 
 if __name__ == '__main__':
