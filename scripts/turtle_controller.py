@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 import math
 from std_srvs.srv import Empty
 from turtlesim.srv import TeleportAbsolute
-from ros_turtle.srv import set_speed
+from ros_turtle.srv import SetSpeed, SetSpeedResponse
 
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 global speed
@@ -102,22 +102,27 @@ def callback(data):
         rospy.loginfo("Invalid type: ", data.type)
 
 def speed_callback(data):
-    rate = rospy.Rate(10)
-    if type(data) == float or type(data) == int:
-        #callback(data_object)
-        rospy.loginfo("Speed service: ", data)
+#    rate = rospy.Rate(10)
+#    if type(data) == float or type(data) == int:
+#        #callback(data_object)
+#        rospy.loginfo("Speed service: ", data)
         global speed
-        speed *= data
+        speed *= data.speed
+        return SetSpeedResponse()
 
 def listener():
     rospy.init_node('turtle_controller', anonymous=True)
 
     try:
         rospy.Subscriber('move_turtle', Move, callback)
-        rospy.Service('set_speed', set_speed, speed_callback)
     except rospy.ServiceException as exp:
         print("ServiceException in turtle_controller.py", + str(exp))
 
+    try:
+        rospy.Service('set_speed', SetSpeed, speed_callback)
+    except rospy.ServiceException as exp:
+        print("ServiceException in turtle_controller.py", + str(exp))
+    
     rospy.spin()
 
 if __name__ == '__main__':
