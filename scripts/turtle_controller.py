@@ -7,53 +7,71 @@ from std_srvs.srv import Empty
 from turtlesim.srv import TeleportAbsolute
 from ros_turtle.srv import SetSpeed, SetSpeedResponse
 
-# Make publisher to turtle and global variable speed with value 3.
+# Make publisher to turtle and global variable speed with value 2.
 pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
-speed = 3
+speed = 2.0
 
+def move_turtle_without_timeout(twist_message, duration):
+    """
+    Moves the turtle with the specified speeds for a specific amount of time.
 
-def move_forward(velocity):
+    :param twist_message: the angular and linear speeds the turtle needs to move
+    :param duration: the amount of time in seconds the turtle needs to move before it stops
+    """
+    time_left = duration
+    while True:
+        if time_left > 0.9: # 0.9 is less than the 1s timeout of the turtle.
+            pub.publish(twist_message)
+            rospy.sleep(0.9)
+            time_left -= 0.9
+        else:
+            pub.publish(twist_message)
+            rospy.sleep(time_left)
+            pub.publish(Twist())
+            break
+
+def get_move_forward_message(velocity):
     """
     Moves turtle forward by specified distance.
 
     :param velocity: X component of linear velocity of turtle
-    :return: None
+    :return: a twist message that moves forward witht the specified linear velocity
     """
     twist_message = Twist()
     twist_message.linear.x = velocity
-    pub.publish(twist_message)
+    return twist_message
 
 
-def turn_left(angular_velocity):
+def get_turn_left_message(angular_velocity):
     """
     Turns the turtle direction by specified radians.
     :param angular_velocity: Z component of angular velocity to turn turtle (in radians).
-    :return: None
+    :return: a twist message that turns counterclockwise with the specified angular velocity
     """
     twist_message = Twist()
     twist_message.linear.x = 0
     twist_message.angular.z = angular_velocity
-    pub.publish(twist_message)
+    return twist_message
 
 
-def make_square(distance):
+def make_square_side(distance):
     """
     Makes a square with the turtle of specified side.
 
     :param distance: Side of square.
     :return: None
     """
+    # Move forward for a specific distance and speed.
     global speed
     time_to_wait = distance / speed
-    move_forward(distance, speed)
-    rospy.sleep(time_to_wait)
-    pub.publish(Twist())
+    twist_message = get_move_forward_message(speed)
+    move_turtle_without_timeout(twist_message, time_to_wait)
 
+    # Turn 90 degrees with a specific angular speed.
     rad = math.pi / 2
     time_to_wait_turn = rad / speed
-    turn_left(speed)
-    rospy.sleep(time_to_wait_turn)
-    pub.publish(Twist())
+    twist_message_turn = get_turn_left_message(speed)
+    move_turtle_without_timeout(twist_message_turn, time_to_wait_turn)
 
 
 def make_circle(radius):
@@ -73,17 +91,7 @@ def make_circle(radius):
     twist_message.linear.x = linear_speed
     twist_message.angular.z = angular_speed
 
-    # 0.9 is less than 1s timeout of turtle.
-    while True:
-        if time_taken > 0.9:
-            pub.publish(twist_message)
-            rospy.sleep(0.9)
-            time_taken -= 0.9
-        else:
-            pub.publish(twist_message)
-            rospy.sleep(time_taken)
-            pub.publish(Twist())
-            break
+    move_turtle_without_timeout(twist_message, time_taken)
 
 
 def callback(data):
@@ -95,26 +103,25 @@ def callback(data):
     """
     # Circle
     if data.type == "circle":
-        rospy.loginfo("circle")
+        rospy.loginfo("Circle")
         make_circle(data.range)
 
     # Square
     elif data.type == "square":
         rospy.loginfo("Square side: '{0}'".format(
             str(data.range)))
-        global speed
-        rospy.loginfo("Speed '{0}' ".format(float(speed)))
+        # Make all 4 sides of the square.
         for i in range(4):
-            make_square(data.range)
+            make_square_side(data.range)
 
     # Reset turtle to centre and clean the screen.
     elif data.type == "reset":
-        rospy.loginfo("reset")
+        rospy.loginfo("Reset")
         rospy.ServiceProxy('reset', Empty)()
 
     # Centre the turtle.
     elif data.type == "center":
-        rospy.loginfo("Centre")
+        rospy.loginfo("Center")
         rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)(5.5, 5.5, 0)
 
     # # Change speed.
