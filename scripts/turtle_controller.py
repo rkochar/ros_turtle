@@ -122,13 +122,7 @@ def callback(data):
     # Centre the turtle.
     elif data.type == "center":
         rospy.loginfo("Center")
-        rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)(5.5, 5.5, 0)
-
-    # # Change speed.
-    # elif data.type == 'speed':
-    #     global speed
-    #     speed *= data.range
-    #     rospy.loginfo("Speed '{0}' ".format(float(speed)))
+        rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)(5.5,5.5,0)
 
     # Default case.
     else:
