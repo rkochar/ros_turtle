@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ros_turtle</name>
+  <name>final_4812522_rahul</name>
   <version>0.0.0</version>
-  <description>The ros_turtle package</description>
+  <description>The ros_turtle package for ROS course assignment.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="rkochar@todo.todo">rkochar</maintainer>
+  <maintainer email="rkochar9@gmail.com">rkochar</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
